@@ -11,7 +11,7 @@ with open(
 
 setup(
     name=NAME,
-    version="1.0.0",
+    version="1.0.1",
     license="ECL-2.0",
     author="Ricardo Job",
     url="https://github.com/ricardojob/psae",
@@ -61,5 +61,3 @@ setup(
 
 
 # python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps psae-ricardojob
-
-
