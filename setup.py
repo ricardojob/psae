@@ -12,7 +12,7 @@ with open(
 setup(
     name=NAME,
     version="1.0.1",
-    license="ECL-2.0",
+    license="MIT",
     author="Ricardo Job",
     url="https://github.com/ricardojob/psae",
     description="A tool for extracting of Platform-Specific APIs",
@@ -20,7 +20,7 @@ setup(
     long_description_content_type="text/markdown",
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        "License :: OSI Approved :: Educational Community License, Version 2.0 (ECL-2.0)",
+        "License :: OSI Approved :: MIT License",
         "Topic :: Education :: Testing",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Development Status :: 5 - Production/Stable",

@@ -1,5 +1,4 @@
 venv
-# workflows/
 figures/
 psaenv/
 psaenv/*
@@ -13,3 +12,7 @@ build/
 *.pyc
 *.egg-info
 *.pypirc
+.pytest_cache
+.coverage
+.DS_Store
+.venv
