@@ -3,6 +3,7 @@ workflows/
 figures/
 psaenv/
 psaenv/*
+dist/*
 *__pycache__/*
 *.csv*
 *.tar.*
