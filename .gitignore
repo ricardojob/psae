@@ -1,0 +1,13 @@
+venv
+workflows/
+figures/
+psaenv/
+psaenv/*
+*__pycache__/*
+*.csv*
+*.tar.*
+.vscode
+test.py
+build/
+*.pyc
+*.egg-info
