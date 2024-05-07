@@ -3,7 +3,7 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 import logging
-from typing import Any, List, NamedTuple, Tuple
+# from typing import Any, List, NamedTuple, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,6 @@ DEBUG = False
 
 @dataclass
 class Call:
-# class Call(NamedTuple):
     """A single Call's Platform-Specific API."""
     project_name: str
     project_hash: str
@@ -33,20 +32,6 @@ class Call:
         return self.line == other.line and self.module == other.module and self.call_name == other.call_name and self.call_name_long == other.call_name_long
     def __hash__(self):
         return hash((self.line, self.module, self.call_name, self.call_name_long))
-    
-    
-# class Call:
-#     def __init__(self, line, module, call_name, call_name_long):
-#         self.line = line
-#         self.module = module
-#         self.call_name = call_name
-#         self.call_name_long = call_name_long
-#     def __eq__(self, other):
-#         if not isinstance(other, Call):
-#             return False
-#         return self.line == other.line and self.module == other.module and self.call_name == other.call_name and self.call_name_long == other.call_name_long
-#     def __hash__(self):
-#         return hash((self.line, self.module, self.call_name, self.call_name_long))
 
 class CheckVisitor(ast.NodeVisitor):         
     def __init__(self, libs):   
@@ -86,16 +71,16 @@ class CheckVisitor(ast.NodeVisitor):
         self.generic_visit(node)
     
     def visit_Assign(self, node: Assign):
-        self.debug(f'v line: {node.lineno}, visit_Assign: {node}')    
+        self.debug(f' line: {node.lineno}, visit_Assign: {node}')    
         if isinstance(node.value, ast.Call):
             call_name, parent = self.get_parent(node.value)
             if "" != parent and not isinstance(parent, (bytes, bytearray)) and not isinstance(parent, str):
-                self.debug(f'v is_call: {self.is_call_from_module(call_name, parent)} -> {call_name}, {parent} [before]')
+                self.debug(f'is_call: {self.is_call_from_module(call_name, parent)} -> {call_name}, {parent} [before]')
                 if self.is_call_from_module(call_name, parent):
                     if isinstance(node.targets[0], ast.Name):
                         target = node.targets[0].id
                         self.chamadas[target] = [parent.id, call_name]
-                        self.debug(f'v module:{parent.id}, package: {call_name}, name: {call_name}, cham: {self.chamadas}') 
+                        self.debug(f'module:{parent.id}, package: {call_name}, name: {call_name}, cham: {self.chamadas}') 
         self.generic_visit(node)
 
     def get_parent(self, node):
@@ -106,9 +91,9 @@ class CheckVisitor(ast.NodeVisitor):
                 break
             if isinstance(parent, (bytes, bytearray, int, float, complex)):
                 break
-            self.debug(f'g line: {parent.lineno}, visit_Assign: {call_name}, node: {parent} ')    
+            self.debug(f'get_parent_line: {parent.lineno}, visit_Assign: {call_name}, node: {parent} ')    
             if isinstance(parent, ast.Attribute):
-                self.debug(f'g line: {parent.lineno}, rec {parent.attr} call: {call_name}')    
+                self.debug(f'get_parent_line: {parent.lineno}, rec {parent.attr} call: {call_name}')    
                 if call_name == '':
                     call_name = parent.attr
                 else:
@@ -148,6 +133,11 @@ class CheckVisitor(ast.NodeVisitor):
             self.debug(f'g return:: call_name: {call_name} and parent: {parent}')    
         return call_name, parent
     
+    def is_declared_apis(self):
+        if not self.modules:  return False 
+        if not set(self.libs_os.keys()).intersection(self.modules): return False
+        return True
+    
     def analyzing_modules(self, node, module, package):
         key = node.name
         if node.asname:
@@ -175,7 +165,6 @@ class CheckVisitor(ast.NodeVisitor):
             # if module_call in self.libs_os:
                 # pass
             return False
-        # self.debug(f"i call: afafasfa module :{module_name in self.libs_os}")
         # negative (p or q) -> not p and not q
         if module_call in self.libs_os:
             module_name = module_call
@@ -232,13 +221,7 @@ class CheckVisitor(ast.NodeVisitor):
     
     def debug(self, msg):
         if DEBUG:
-            # print(f'[debug] {self}: {msg}')
-            # print(f'[debug] {msg}')    
-            logger.info(msg=msg
-                # "Could not decode or validate workflow for %s (commit=%s, change_type=%s)",
-                # f"{msg}",
-                # exc_info=True,
-            )         
+            logger.info(msg=msg)         
 
 def all_files(dir, extension='.py'):
     """ 
@@ -249,8 +232,6 @@ def all_files(dir, extension='.py'):
     files = []
     for file in path.rglob(pattern=f'*{extension}'):
         files.append(file)
-    
-    # [print(f) for f in files]
     return files
 
 def read_apis():
@@ -270,14 +251,6 @@ if __name__ == '__main__':
             checkVisitor.debug(f"parse from: {python_file}")
             checkVisitor.visit(file_compile)
             [print(f'name; hash; {c.line}; {c.module}; {c.call_name}; {c.call_name_long}; {filename}') for c in checkVisitor.calls]
-            # call.append(project_name)
-            #                 call.append(project_hash)
-            #                 call.append(c.line)
-            #                 call.append(c.module)
-            #                 call.append(c.call_name)
-            #                 call.append(filename)
-            #                 call.append(build_url(project_name, project_hash, filename, c.line))
-            #                 calls.append(call)
         except SyntaxError as ex:
             print('erro', python_file) 
  

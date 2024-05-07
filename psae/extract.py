@@ -2,16 +2,14 @@ import os
 import ast
 import os.path
 import logging
-from typing import Any, List, NamedTuple, Tuple
+from typing import List
 from capture import CheckVisitor, Call
 
 logger = logging.getLogger(__name__)
 
     
 def all_files(dir, extension='.py'):
-    """ 
-    List all files in dir
-    """
+    """ List all files in dir. """
     from pathlib import Path
     path = Path(dir)
     files = []
@@ -63,19 +61,9 @@ class ExtractPlatformSpecific:
     def touch(self, content)  -> List[Call]:
         file_compile = ast.parse(content)
         checkVisitor = CheckVisitor(self.os_apis)
-        # checkVisitor.debug(f"parse from: {python_file}")
         checkVisitor.visit(file_compile)
         return checkVisitor.calls
-        # return self.new_method(os_apis, self.filename)
-                
-
-    # def new_method(self, os_apis, filename):
-    #     file_compile = ast.parse(self.content)
-    #     checkVisitor = CheckVisitor(os_apis)
-    #     # checkVisitor.debug(f"parse from: {python_file}")
-    #     checkVisitor.visit(file_compile)
-    #     return [print(f'name; hash; {c.line}; {c.module}; {c.call_name}; {c.call_name_long}; {filename}') for c in checkVisitor.calls]
-    
+        
 class WriteCSV:
     def __init__(self, output):
         self.output = output   
