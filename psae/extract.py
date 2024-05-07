@@ -1,11 +1,80 @@
 import os
+import ast
 import os.path
-class ExtractPlatformSpecific:
-    def __init__(self, content):
-        self.content = content   
+import logging
+from typing import Any, List, NamedTuple, Tuple
+from capture import CheckVisitor, Call
+
+logger = logging.getLogger(__name__)
+
+    
+def all_files(dir, extension='.py'):
+    """ 
+    List all files in dir
+    """
+    from pathlib import Path
+    path = Path(dir)
+    files = []
+    for file in path.rglob(pattern=f'*{extension}'):
+        files.append(file)
+    # [print(f) for f in files]
+    return files
+
+def read_apis():
+    import json
+    file = open('psae/apis-os.json')
+    return json.load(file)
+ 
+class ExtractPlatformSpecificDir:
+    def __init__(self, directory):
+        self.directory = directory
+        self.calls_apis = []  
+        self.os_apis = read_apis()
         
-    def touch(self):
-        print(self.content)
+    def touch(self) -> List[Call]: # project_dir = "/Users/job/Documents/dev/doutorado/study/study-docs/input/classes"
+        for python_file in all_files(self.directory):
+            try:
+                if python_file.is_dir(): continue
+                filename = str(python_file).replace(self.directory,"")
+                logging.info(msg = f" parse from: {str(python_file)}")
+                content = open(python_file).read()
+                extract  = ExtractPlatformSpecific(self.os_apis)
+                apis = extract.touch(content)
+                for c in apis:
+                    c.filename = filename # _replace(filename=filename) 
+                    c.is_test = 'test' in filename # verify filename
+                # return [print(f'names; hashs; {c.line}; {c.module}; {c.call_name}; {c.call_name_long}; {filename}') for c in apis]
+                self.calls_apis.extend(apis)
+            except SyntaxError as ex:
+                # print('erro', python_file) 
+                logger.error(
+                    "Could not process python (file=%s)",
+                    str(python_file),
+                    exc_info=True,
+                )
+                # raise
+        return self.calls_apis
+       
+        
+class ExtractPlatformSpecific:
+    def __init__(self, os_apis):
+        self.os_apis = os_apis   
+        
+    def touch(self, content)  -> List[Call]:
+        file_compile = ast.parse(content)
+        checkVisitor = CheckVisitor(self.os_apis)
+        # checkVisitor.debug(f"parse from: {python_file}")
+        checkVisitor.visit(file_compile)
+        return checkVisitor.calls
+        # return self.new_method(os_apis, self.filename)
+                
+
+    # def new_method(self, os_apis, filename):
+    #     file_compile = ast.parse(self.content)
+    #     checkVisitor = CheckVisitor(os_apis)
+    #     # checkVisitor.debug(f"parse from: {python_file}")
+    #     checkVisitor.visit(file_compile)
+    #     return [print(f'name; hash; {c.line}; {c.module}; {c.call_name}; {c.call_name_long}; {filename}') for c in checkVisitor.calls]
     
 class WriteCSV:
     def __init__(self, output):
@@ -30,7 +99,8 @@ class WriteCSV:
         #     )
     
     def write_to_stdo(self, content):
-        print(content, self.output)
+        [print(f'{c.project_name}; hashs; {c.line}; {c.module}; {c.call_name}; {c.call_name_long}; {c.is_test} ; {c.filename}') for c in content]
+        # print(content)
         # utils.write_csv(
         #     entries,
         #     sys.stdout,
