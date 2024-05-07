@@ -4,7 +4,3 @@ requires = [
   "wheel",
 ]
 build-backend = "setuptools.build_meta"
-
-[project.urls]
-"Homepage" = "https://github.com/ricardojob/psae"
-"Bug Tracker" = "https://github.com/ricardojob/psae/issues"

@@ -45,6 +45,9 @@ setup(
     entry_points={"console_scripts": [f"{NAME}={NAME}.main:main"]},
 )
 
+# [project.urls]
+# "Homepage" = "https://github.com/ricardojob/psae"
+# "Bug Tracker" = "https://github.com/ricardojob/psae/issues"
 
 # python3 -m venv psaenv
 # source psaenv/bin/activate
