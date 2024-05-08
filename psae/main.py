@@ -5,11 +5,12 @@ import logging
 import tempfile
 import click
 
-from extract import ExtractPlatformSpecific, ExtractPlatformSpecificDir, WriteCSV
-from project_config import ProjectLocal, ProjectRemote, Project
+from extract import ExtractPlatformSpecific, ExtractPlatformSpecificDir, Report
+from psae.projects import Project
 # from .extract import WriteCSV
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filename='log.txt')
 logger = logging.getLogger(__name__)
 
 # See https://click.palletsprojects.com/en/8.1.x/documentation/#help-texts
@@ -35,42 +36,38 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
     "repository",
     type=str,
 )
+@click.option(
+    "--commit",
+    "-c",
+    help="The commit reference (i.e., commit SHA or TAG) to be considered for the extraction."
+    "It is important to note that each commit references a local project.", 
+    type=str,
+)
+@click.option(
+    "--repository-name",
+    "-n",
+    help="The name's project to be considered for the extraction."
+    "It is important to note that the name references a local project.", 
+    type=str,
+)
 # @click.option(
 #     "--name",  "-n", help="Print name in console.", type=str,
 # )
 # def main(name, output):
-def main(output, repository):
+def main(output, repository, commit, repository_name):
     # print('directory: ', directory)
     # extract = ExtractPlatformSpecific("")
     # extract.touch()
     
-    # tmp_directory = None  # the temporary directory if one is created
-    # repo = None  # the repository
-
-    # # clone the repository if it does not exist
-    # try:
-    #     if not os.path.exists(repository):
-    #         if not save_repository:
-    #             tmp_directory = tempfile.TemporaryDirectory(dir=".")
-    #             save_repository = tmp_directory.name
-    #         repo = clone_repository(repository, save_repository)
-    #     else:
-    #         repo = read_repository(repository)
-    # except (git.exc.GitCommandError, ValueError) as exception:
-    #     logger.error("Could not read repository at '%s'", repository)
-    #     logger.debug(exception)
-    #     sys.exit(1)
-    
-    
     # project = ProjectLocal(directory=repository)
     # project = ProjectRemote().clone(repository)
-    project = Project.build(repository)
-    print(project)
+    project = Project.build(repository, repository_name, commit)
+    logger.info(project)
     extract = ExtractPlatformSpecificDir(project)
     apis = extract.touch()
-    print(f"length: {len(apis)}")
-    # csv = WriteCSV(output)
-    # csv.write(apis) 
+    logger.info(f"Collected: {len(apis)} Platform-Specific APIs.")
+    report = Report.build(output)
+    report.write(apis) 
     
     # extract = ExtractPlatformSpecificDir(directory)
     # apis = extract.touch()
