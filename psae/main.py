@@ -24,18 +24,7 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
     "By default, the information will written to the standard output.",
     type=click.Path(exists=False, file_okay=True, dir_okay=False, writable=True),
 )
-# @click.option(
-#     "--directory",
-#     "-d",
-#     help="The directory where the extracted Platform-Specific APIs will be stored."
-#     "It is important to note that each directory stores a single project.", 
-#     default = "data",
-#     type=click.Path(exists=False, file_okay=False, dir_okay=True, writable=True),
-# )
-@click.argument(
-    "repository",
-    type=str,
-)
+
 @click.option(
     "--commit",
     "-c",
@@ -50,17 +39,11 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
     "It is important to note that the name references a local project.", 
     type=str,
 )
-# @click.option(
-#     "--name",  "-n", help="Print name in console.", type=str,
-# )
-# def main(name, output):
+@click.argument(
+    "repository",
+    type=str,
+)
 def main(output, repository, commit, repository_name):
-    # print('directory: ', directory)
-    # extract = ExtractPlatformSpecific("")
-    # extract.touch()
-    
-    # project = ProjectLocal(directory=repository)
-    # project = ProjectRemote().clone(repository)
     project = Project.build(repository, repository_name, commit)
     logger.info(project)
     extract = ExtractPlatformSpecificDir(project)
@@ -68,19 +51,10 @@ def main(output, repository, commit, repository_name):
     logger.info(f"Collected: {len(apis)} Platform-Specific APIs.")
     report = Report.build(output)
     report.write(apis) 
-    
-    # extract = ExtractPlatformSpecificDir(directory)
-    # apis = extract.touch()
-    # csv = WriteCSV(output)
-    # csv.write(apis) 
-    # [print(f'{c.project_name}; hashs; {c.line}; {c.module}; {c.call_name}; {c.call_name_long}; {c.is_test} ; {c.filename}') for c in apis]
-    # return [print(f'{c}') for c in apis]
-    
-  
-    
+
 if __name__ == "__main__":
     main()
     
 
-#  python3 psae/main.py ../study-docs/input/classes
-#  python3 psae/main.py https://github.com/nvbn/thefuck
+#  python3 psae/main.py tests/classes -n my/local --commit da39a3ee5e6b4b0d3255bfef95601890afd80709
+#  python3 psae/main.py https://github.com/nvbn/thefuck -o output.csv 
