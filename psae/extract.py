@@ -59,9 +59,7 @@ class ExtractPlatformSpecificDir:
         call.append(c.is_test) # verify filename
         call.append(c.filename)
         call.append(c.url)
-        
         return call
-        # calls.append(call)
         
     def __build_url(self, c:Call):
         return f'https://github.com/{c.project_name}/blob/{c.project_hash}{c.filename}#L{c.line}'  

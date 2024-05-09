@@ -1,16 +1,11 @@
-import os
-import re
-import sys
 import logging
-import tempfile
 import click
 
-from extract import ExtractPlatformSpecific, ExtractPlatformSpecificDir, Report
-from psae.projects import Project
-# from .extract import WriteCSV
+from extract import  ExtractPlatformSpecificDir, Report
+from projects import Project
 
-# logging.basicConfig(level=logging.INFO)
-logging.basicConfig(level=logging.INFO, filename='log.txt')
+logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO, filename='log.txt')
 logger = logging.getLogger(__name__)
 
 # See https://click.palletsprojects.com/en/8.1.x/documentation/#help-texts
@@ -43,7 +38,21 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
     "repository",
     type=str,
 )
-def main(output, repository, commit, repository_name):
+def main(
+    output, 
+    repository, 
+    commit, 
+    repository_name
+):
+    """Extract the usage of Platform-Specific APIs from a single Git repository `REPOSITORY`.
+    The Git repository can be local or remote. In the latter case, it will be pulled
+    locally in the folder `data`.
+    Every extracted Platform-Specific APIs will be written in the CSV file given to `-o`,
+    or in the standard output if not specified.
+
+    Example of usage:
+    psae myRepository -n myRepositoryName -o output.csv
+    """
     project = Project.build(repository, repository_name, commit)
     logger.info(project)
     extract = ExtractPlatformSpecificDir(project)
@@ -56,5 +65,3 @@ if __name__ == "__main__":
     main()
     
 
-#  python3 psae/main.py tests/classes -n my/local --commit da39a3ee5e6b4b0d3255bfef95601890afd80709
-#  python3 psae/main.py https://github.com/nvbn/thefuck -o output.csv 

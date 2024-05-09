@@ -11,7 +11,7 @@ with open(
 
 setup(
     name=NAME,
-    version="1.0.1",
+    version="1.0.2",
     license="MIT",
     author="Ricardo Job",
     url="https://github.com/ricardojob/psae",

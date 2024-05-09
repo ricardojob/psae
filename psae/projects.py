@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Project: 
-    """A project representaion."""
+    """A project representation."""
     project_name: str
     project_hash: str
     project_url_remote: str
