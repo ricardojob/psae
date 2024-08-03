@@ -5,7 +5,7 @@ import os.path
 import logging
 import csv
 from typing import List
-from capture import CheckVisitor, Call
+from psae.capture import CheckVisitor, Call
 
 logger = logging.getLogger(__name__)
 

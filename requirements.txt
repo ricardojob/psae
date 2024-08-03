@@ -5,3 +5,4 @@ coverage == 6.5.0
 pytest
 pygments
 pydriller
+requests
