@@ -77,6 +77,5 @@ def test_notafile_error(self):
     
     
     
-    
 if __name__ == '__main__':
     unittest.main()

@@ -92,6 +92,32 @@ def with_if_compare():
         self.assertEqual(len(checkVisitor.calls_context), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
     
+    def test_call_if_else_with(self):
+        code = """
+import os 
+import sys
+def with_if_compare():   
+    if sys.platform == "win":
+        pass
+    else:
+        if(os.fork()>0):
+            pass
+                """
+        # if not sys.platform.startswith("win"):
+        # scpstat = subprocess.Popen(["/bin/sh", "-c", "command -v scp"]).wait()                
+        file_compile = ast.parse(code)
+        checkVisitor = CheckVisitor(self.os_apis)
+        checkVisitor.visit(file_compile)
+        
+        usage = Usage(5, 'sys.platform', {'win'})
+        first_call = Call('name', 'hash', 8, 'os', 'fork', '', False, 'filename', 'github.com')
+        self.assertIn(usage, checkVisitor.usages) 
+        self.assertIn(first_call, checkVisitor.calls_context) 
+        self.assertIn(first_call, checkVisitor.calls) 
+        self.assertEqual(len(checkVisitor.usages), 1)
+        self.assertEqual(len(checkVisitor.calls_context), 1)
+        self.assertEqual(len(checkVisitor.calls), 1)
+    
         
     def test_call_if_and_out(self):
         code = """
@@ -237,6 +263,28 @@ def with_if_compare():
             self.assertEqual(len(checkVisitor.calls_context), 1)
             self.assertEqual(len(checkVisitor.calls), 1)
     
+    def test_call_try_if_call(self):
+            code = """
+import os 
+def with_if_compare():   
+    try:
+        if not sys.platform.startswith("win"):
+            print(os.fork())
+    except OSError:
+        pass
+                """
+            file_compile = ast.parse(code)
+            checkVisitor = CheckVisitor(self.os_apis)
+            checkVisitor.visit(file_compile)
+            usage = Usage(5, 'sys.platform', {'win'})
+            first_call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com')
+            self.assertIn(usage, checkVisitor.usages) 
+            self.assertIn(first_call, checkVisitor.calls_context) 
+            self.assertIn(first_call, checkVisitor.calls) 
+            self.assertEqual(len(checkVisitor.usages), 1)
+            self.assertEqual(len(checkVisitor.calls_context), 1)
+            self.assertEqual(len(checkVisitor.calls), 1)
+    
     def test_call_if_try(self):
             code = """
 import os 
@@ -361,11 +409,11 @@ def test_encrypt_with_rounds_no_passlib():
             self.assertEqual(len(checkVisitor.calls_context), 0)
             self.assertEqual(len(checkVisitor.calls), 1)
     
-    def test_call_decorator_not_declared(self):
+    def test_call_decorator_hasattr(self):
             code = """
 import os 
-import sys
-@unittest.skip
+import signal
+@pytest.mark.skipif(not hasattr(signal, "SIGALRM"),reason="SIGALRM is not implemented for this platform",)
 def test_encrypt_with_rounds_no_passlib():
     print(os.fork())
 """
@@ -373,10 +421,10 @@ def test_encrypt_with_rounds_no_passlib():
             checkVisitor = CheckVisitor(self.os_apis)
             checkVisitor.visit(file_compile)
             first_call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com')
-            self.assertNotIn(first_call, checkVisitor.calls_context) 
+            self.assertIn(first_call, checkVisitor.calls_context) 
             self.assertIn(first_call, checkVisitor.calls) 
             self.assertEqual(len(checkVisitor.usages), 0)
-            self.assertEqual(len(checkVisitor.calls_context), 0)
+            self.assertEqual(len(checkVisitor.calls_context), 1)
             self.assertEqual(len(checkVisitor.calls), 1)
     
     

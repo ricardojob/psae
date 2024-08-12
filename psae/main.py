@@ -15,7 +15,7 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 @click.option(
     "--output",
     "-o",
-    help="The output CSV file where the usage of Platform-Specific APIs related to the repository will be stored. "
+    help="The output CSV file where the usage of OS-Specific APIs related to the repository will be stored. "
     "By default, the information will written to the standard output.",
     type=click.Path(exists=False, file_okay=True, dir_okay=False, writable=True),
 )
@@ -44,10 +44,10 @@ def main(
     commit, 
     repository_name
 ):
-    """Extract the usage of Platform-Specific APIs from a single Git repository `REPOSITORY`.
+    """Extract the usage of OS-Specific APIs from a single Git repository `REPOSITORY`.
     The Git repository can be local or remote. In the latter case, it will be pulled
     locally in the folder `data`.
-    Every extracted Platform-Specific APIs will be written in the CSV file given to `-o`,
+    Every extracted OS-Specific APIs will be written in the CSV file given to `-o`,
     or in the standard output if not specified.
 
     Example of usage:
@@ -57,7 +57,7 @@ def main(
     logger.info(project)
     extract = ExtractPlatformSpecificDir(project)
     apis = extract.touch()
-    logger.info(f"Collected: {len(apis)} Platform-Specific APIs.")
+    logger.info(f"Collected: {len(apis)} OS-Specific APIs.")
     report = Report.build(output)
     report.write(apis) 
 

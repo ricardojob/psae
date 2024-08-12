@@ -43,6 +43,7 @@ def read_by_records(source: str) -> CallRecordGenerator:
             call = Call("name","hash",int(record[2]), record[3], record[4], '', False, "filename", "github.com")
             # print(f"{record[10]} -> {record[10].lower().capitalize()} {'true'==record[10].lower().capitalize()} = {record}")
             # yield CallRecord(call, record[8], int(record[9]), record[10].lower().capitalize())
+            # project_name,project_hash,line,module,call,API,is_test,filename,url,risk,handle,conditional-statement,exception-handling,decorator,native-function,guard-clauses,design
             yield CallRecord(call, record[8], int(record[9]), record[10])
                         
 class TestCallIf(unittest.TestCase):
@@ -61,6 +62,7 @@ class TestCallIf(unittest.TestCase):
         for record in read_by_records(self.filename):
             with self.subTest(msg=f"{record.url_pretty}", record=record):
                 if (self.find_problems(record.url_pretty)):
+                    print(f'{record.url_pretty}; {record.handle}; - ; * ')
                     self.skipTest(f"problems with: {record.url_pretty}")
                 code = self.read_code(record)
                 file_compile = ast.parse(code)
@@ -69,9 +71,11 @@ class TestCallIf(unittest.TestCase):
                 
                 present = record.call in checkVisitor.calls_context #se não estiver, tem risco
                 risk = record.risk == 0 # zero representa que não tem risco; 1, que tem
-                if (present!=risk):
-                    # print(f'handle: {record.handle}, url: {record.url_pretty}')
-                    print(f'{record.handle}; {record.url_pretty}')
+                
+                print(f'{record.url_pretty}; {record.handle}; {risk}; {present}')
+                # if (present!=risk):
+                #     # print(f'handle: {record.handle}, url: {record.url_pretty}')
+                #     print(f'{record.handle}; {record.url_pretty}')
                 self.assertIn(record.call, checkVisitor.calls) 
                 self.assertTrue(present == risk) 
                 # self.assertIn(record.call, checkVisitor.calls_context) 
@@ -82,7 +86,7 @@ class TestCallIf(unittest.TestCase):
                 # self.assertIn(record.usage, checkVisitor.usages, msg=record.url_pretty)
     
     def find_problems(self, url):
-        problems = []
+        problems = ['https://github.com/ranger/ranger/blob/136416c7e2ecc27315fe2354ecadfe09202df7dd/doc/config/commands.py#L2073']
         for problem in problems:
             if url.startswith(problem): 
                 return True

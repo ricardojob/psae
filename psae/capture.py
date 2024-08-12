@@ -261,6 +261,7 @@ class CheckVisitor(ast.NodeVisitor):
         )
         nested = self.container.get('context','')
         if nested and nested!= "" and "yes" in nested:
+            self.debug(f"add_calls:container:context: {self.container}, p: self.p ")
             self.calls_context.add(
                 Call.make(node.lineno, module_name, call_name, call_name_long)
             )
@@ -272,20 +273,55 @@ class CheckVisitor(ast.NodeVisitor):
     
     def visit_FunctionDef(self, node):
         self.funcao = node.name
+        self.debug(f"visit_FunctionDef:begin: {node.name}: {self.container}")        
         ant = self.container.get('function','')
         self.container['function'] = f"{ant}/{node.name}"
+        # nested_function = self.container.get('nested_function','')
+        # self.container['nested_function'] = f"{nested_function}/{node.name}"
         self.parse_decorator(node)
         self.generic_visit(node)
-        self.container['function'] = f"{ant}"                    
+        self.container['function'] = f"{ant}"  
+        self.debug(f"visit_FunctionDef:end: {node.name}: {self.container}")           
+        self.clear_container() 
+
+    def clear_container(self):
+        if (self.container.get('function','') == "" 
+            # and self.container.get('context','') !="" 
+            and self.container.get('decorator','') ==""
+            and self.container.get('conditional','') =="" 
+            and self.container.get('class','') =="" 
+            and self.container.get('nested','') =="" 
+            and self.container.get('except','') =="") : 
+            # self.container['conditional'] = ""   
+            self.container['nested'] = ""   
+            # self.container['compare'] = ""   
+            self.container['current'] = ""   
+            self.container['context'] = ""   
+            # self.container['except'] = ""               
         
     # AsyncFunctionDef(identifier name, arguments args,stmt* body, expr* decorator_list, expr? returns,string? type_comment)
     def visit_AsyncFunctionDef(self, node):
         self.funcao = node.name
+        self.debug(f"visit_AsyncFunctionDef:begin: {node.name}: {self.container}")        
         ant = self.container.get('function','')
         self.container['function'] = f"{ant}/{node.name}"
         self.parse_decorator(node)
         self.generic_visit(node)    
         self.container['function'] = f"{ant}"   
+        self.debug(f"visit_AsyncFunctionDef:end: {node.name}: {self.container}")
+        self.clear_container() 
+
+        # if (self.container.get('function','') == ""): 
+        #     self.debug(f"visit_AsyncFunctionDef:removed: {node.name}: {self.container}")
+        #     self.container['conditional'] = ""   
+        #     self.container['nested'] = ""   
+        #     self.container['compare'] = ""   
+        #     self.container['current'] = ""   
+        #     self.container['context'] = ""   
+        #     self.container['except'] = ""   
+        
+        # visit_Try:container: {'conditional': '', 'nested': '/try', 'function': '/_run_test_case', 'decorator': '', 'compare': '', 'current': '/try/if', 'context': 'yes', 'class': '', 'excepthandler': {'Timeout'}, 'except': ''}
+
 
     # ClassDef(identifier name,expr* bases,keyword* keywords,stmt* body,expr* decorator_list)
     def visit_ClassDef(self, node):
@@ -311,7 +347,7 @@ class CheckVisitor(ast.NodeVisitor):
         self.debug(f'visit_Compare end: {node}')
         
     def visit_IfExp(self, node):
-        self.debug(f'visit_IfExp begin: {node}')
+        self.debug(f'visit_IfExp begin: line:{node.lineno} -> {node}, test: {node.test}')
         # if isinstance(node.test, ast.Compare):
         #     self.capture_compare(node.test)
         # if isinstance(node.test, ast.Call):
@@ -320,40 +356,47 @@ class CheckVisitor(ast.NodeVisitor):
         # self.p = node
         # anterior = self.container.get('conditional','')
         self.container['conditional'] = "/if"
-        self.capture_bool(node.test)
+        # self.capture_bool(node.test)
         anterior = self.container.get('nested','')
         self.container['nested'] = f"{anterior}/if"
+        self.capture_bool(node.test)
         self.generic_visit(node)
         # self.p = None
         self.container['conditional'] = ""
         # self.debug(f'visit_IfExp:container: {self.container}')
         nested = self.container.get('nested','')
         current = self.container.get('current','')
-        if (nested==current):
+        tries = self.container.get('except','')
+        if (nested==current and tries==""):
             self.container['context'] = ""
+            self.container['current'] = f"{anterior}"
         self.container['nested'] = f"{anterior}"
         self.debug(f'visit_IfExp finish: {node}')
         self.usage = Usage.make(0, '')
     
     def visit_If(self, node):
-        self.debug(f'visit_If begin: {node}, test: {node.test}')
+        self.debug(f'visit_IfExp begin: line:{node.lineno} -> {node}, test: {node.test}')
         # self.capture_bool(node.test)
         # self.p = node
         # anterior = self.container.get('conditional','')
         self.container['conditional'] = "/if"
-        self.capture_bool(node.test)
+        # self.capture_bool(node.test)
         anterior = self.container.get('nested','')
         self.container['nested'] = f"{anterior}/if"
+        self.capture_bool(node.test)
+        self.debug(f'visit_If:container:generic_visit: {self.container}')
         self.generic_visit(node)
         # self.p = None
         self.container['conditional'] = ""
         self.debug(f'visit_If:container: {self.container}')
         nested = self.container.get('nested','')
         current = self.container.get('current','')
-        if (nested==current):
+        tries = self.container.get('except','')
+        if (nested==current and tries==""):
             self.container['context'] = ""
+            self.container['current'] = f"{anterior}"
         self.container['nested'] = f"{anterior}"
-        self.debug(f'visit_If finish: {node}')
+        self.debug(f'visit_If finish: {node}, container: {self.container}')
         self.usage = Usage.make(0, '')
     
     def visit_ExceptHandler(self, node: ast.ExceptHandler):
@@ -553,7 +596,7 @@ class CheckVisitor(ast.NodeVisitor):
         # platforms = set()         
         if(isinstance(call.func, ast.Name)): # uma chamada como argumento: any(platform.win32_ver())
             self.debug(f'capture_call:name: {call.func.id}')
-            self.debug(f'capture_call:name: {call.args}')
+            self.debug(f'capture_call:args: {call.args}')
             for comparator in call.args:  
                 self.debug(f'comparator:name: {comparator}')
                 if isinstance(comparator, ast.Call):
@@ -568,7 +611,37 @@ class CheckVisitor(ast.NodeVisitor):
                             self.usage.platforms.add(elts.value)
                         if isinstance(elts, ast.Name):
                             self.usage.platforms.add(elts.id)
-            
+            # capturar o hasattr
+            if (call.func.id =="hasattr") :
+                if isinstance(call.args[1], ast.Constant): #TODO: apenas valores constantes no segundo parametro
+                    if isinstance(call.args[0], ast.Name): #TODO: excluindo chamadas a self.hasattr 
+                        api = f"{call.args[0].id}.{call.args[1].value}"
+                        self.debug(f'capture_call:hasattr: api:  {api}, args: {call.args}') #module_name = call.args[0] #api_name = call.args[1]
+                        
+                        if  self.is_call_from_module(call.args[1].value, call.args[0]): 
+                            
+                            call_name = call.args[1].value
+                            module_name = self.chamadas[call.args[0].id][0]
+                            if call_name == "":
+                                call_name = call.args[0].id
+                            
+                            # call_name_long = ""    
+                            if not module_name in self.libs_os: #and module_name in self.chamadas:
+                                # call_name_long = f"{module_name}.{call_name}" # para capturar com dot
+                                module_name = self.chamadas[module_name][0]
+                            
+                            api = f"{module_name}.{call_name}"
+                            if self.is_member_of(module_name, call_name):
+                                self.debug(f'capture_call:hasattr: api {api}, container: {self.container}') #module_name = call.args[0] #api_name = call.args[1]
+                                context = self.container.get('context','')
+                                if(context!="yes"):
+                                    self.container['context'] = "yes"
+                                    self.container['current'] = self.container.get('nested','')
+                                # if api in self.libs_os: #and module_name in self.chamadas:
+                                #     # module_name = self.chamadas[module_name][0]
+                                #     # if  self.is_member_of(module_name, call_name):
+                                #     self.debug(f'capture_call:hasattr: api:{api} ') #module_name = call.args[0] #api_name = call.args[1]
+                
         if(isinstance(call.func, ast.Attribute)):
         #   print(f"capture_call: line: {line} , API: {call.func.value.value.id}")  
           
@@ -685,6 +758,8 @@ class CheckVisitor(ast.NodeVisitor):
                 self.capture_bool(arg)  
                 
         self.debug(f"parse_decorator:end: {self.container}")
+        ant = self.container.get('class','')
+        
         self.container['decorator'] = ""    
         # for d in node.decorator_list:
         #     if not isinstance(d, ast.Call):

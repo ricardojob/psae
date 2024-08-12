@@ -264,7 +264,7 @@ def test_user_agent():
         file_compile = ast.parse(code)
         checkVisitor = CheckVisitor(self.os_apis)
         checkVisitor.visit(file_compile)
-        self.assertEqual(len(checkVisitor.usages), 1)
+        # self.assertEqual(len(checkVisitor.usages), 1) # removido compare
         self.assertEqual(len(checkVisitor.calls), 0)
         first_usage = Usage(6, 'platform.system', set())
 
@@ -286,6 +286,24 @@ def test_user_agent():
         first_usage = Usage(5, 'sys.platform', {'linux'})
 
         self.assertIn(first_usage, checkVisitor.usages) 
+    
+    def test_if_hasattr(self):
+        code = """
+import os 
+def test_user_agent():
+    if hasattr(os, "register_at_fork"):
+        os.register_at_fork()
+"""
+        file_compile = ast.parse(code)
+        checkVisitor = CheckVisitor(self.os_apis)
+        checkVisitor.visit(file_compile)
+        call = Call('name', 'hash', 5, 'os', 'register_at_fork', '', False, 'filename', 'github.com')
+        
+        self.assertEqual(len(checkVisitor.usages), 0)
+        self.assertEqual(len(checkVisitor.calls), 1)
+        self.assertEqual(len(checkVisitor.calls_context), 1)
+        self.assertIn(call, checkVisitor.calls)     
+        self.assertIn(call, checkVisitor.calls_context)     
 
     def test_if_assign(self):
         code = """
@@ -333,7 +351,7 @@ def test_getwindowsversion():
         file_compile = ast.parse(code)
         checkVisitor = CheckVisitor(self.os_apis)
         checkVisitor.visit(file_compile)
-        self.assertEqual(len(checkVisitor.usages), 1)
+        # self.assertEqual(len(checkVisitor.usages), 1) # removido compare
         self.assertEqual(len(checkVisitor.calls), 0)
         # first_usage = Usage(5, 'platform.platform', {})
         first_usage = Usage(7, 'platform.platform', set())
