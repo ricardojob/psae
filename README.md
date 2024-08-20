@@ -80,17 +80,23 @@ Options:
   -n, --repository-name TEXT  The name's project to be considered for the
                               extraction.It is important to note that the name
                               references a local project.
+  -p, --platforms [all|OS]    The Platform-specific API group to figure out.
+  -f, --filter FILE           The JSON file with the configuration of
+                              Platform-Specific APIs that will be filter. By
+                              default, this option is mandatory to option
+                              --platforms.
   -h, --help                  Show this message and exit.
 ```
 
 The CSV file given to `-o` (or that will be written to the standard output by default) will contain the following columns:
 - `project_name`: the name of the repository
-- `project_hash`: the commit SHA of the commit where the platform-specific APIs file was extracted
+- `project_commit`: the commit SHA of the commit where the platform-specific APIs file was extracted
 - `line`: the line where the platform-specific API usage occurs
 - `module`: the module that packages the platform-specific API
 - `call`: a short information about of platform-specific API
 - `is_test`: a boolean indicating if the file is a test file
 - `url`: the URL that represents the API usage on Github
+- `risk`: the (low or right) risk for this instance
 
 ## License
 

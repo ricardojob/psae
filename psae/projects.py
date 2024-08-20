@@ -12,7 +12,7 @@ class Project:
     project_hash: str
     project_url_remote: str
     directory: str
-    platform_apis_filename: str = 'psae/apis-os.json'
+    platform_apis_filename: str = 'psae/apis-all.json'
     
     def read_apis(self):
         import json
@@ -20,24 +20,24 @@ class Project:
         file = open(self.platform_apis_filename)
         return json.load(file)
     
-    def build(repository, project_name, commit):
+    def build(repository, project_name, commit, load_apis):
         # clone the repository if it does not exist
         try:
             if not os.path.exists(repository): #remote
-                return ProjectRemote().clone(repository)
+                return ProjectRemote(load_apis).clone(repository)
             else: #local
-                return ProjectLocal(repository, project_name, commit)
+                return ProjectLocal(load_apis, repository, project_name, commit)
         except (Exception) as exception:
             logger.error("Could not read repository at '%s'", repository)
             logger.debug(exception)
     
 class ProjectLocal (Project):
-    def __init__(self, directory: str = "temp", project_name: str="project_name", project_hash: str = "project_hash"):
-        super().__init__(project_name, project_hash, project_url_remote=directory, directory=directory)
+    def __init__(self, load_apis, directory: str = "temp", project_name: str="project_name", project_hash: str = "project_hash"):
+        super().__init__(project_name, project_hash, project_url_remote=directory, directory=directory, platform_apis_filename=load_apis)
         
 class ProjectRemote(Project):
-    def __init__(self, project_name: str="project_name", project_hash: str = "project_hash"):
-        super().__init__(project_name, project_hash, project_url_remote="https://github.com/", directory="temp")
+    def __init__(self, load_apis, project_name: str="project_name", project_hash: str = "project_hash"):
+        super().__init__(project_name, project_hash, project_url_remote="https://github.com/", directory="temp", platform_apis_filename=load_apis)
         
     def clone(self, repository):
         if "https://github.com/" in repository:
