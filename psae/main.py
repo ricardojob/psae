@@ -1,7 +1,7 @@
 import logging
 import click
 
-from extract import  ExtractPlatformSpecificDir, Report
+from psae.extract import  ExtractPlatformSpecificDir, Report
 from projects import Project
 
 logging.basicConfig(level=logging.INFO)
@@ -88,3 +88,11 @@ def main(
 
 if __name__ == "__main__":
     main()
+    
+# - all - all  
+# - OS (Linux, Windows, macOS, and Unix) => por default, a ferramenta computa esses dados
+# - unix-like (BSD, OpenBSD, FreeBSD, DragonFlyBSD, and NetBSD)
+# - other-os (Oracle Solaris, IBM AIX, and VxWorks) + android
+    # - mobile OS (Android)
+# - webassembly platforms (Emscripten and WASI)
+# - standards (POSIX and pthreads)   

@@ -21,8 +21,24 @@ def with_if_compare():
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'sys.platform', {'win32'})
-        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
+        self.assertIn(call, checkVisitor.calls) 
+    
+    def test_if_compare_high(self):
+        code = """
+import os 
+import sys
+def with_if_compare(a):   
+    if a != "win32":
+        print(os.fork())
+                """
+        file_compile = ast.parse(code)
+        checkVisitor = CheckVisitor(self.os_apis)
+        checkVisitor.visit(file_compile)
+        self.assertEqual(len(checkVisitor.usages), 0)
+        self.assertEqual(len(checkVisitor.calls), 1)
+        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com', "high")
         self.assertIn(call, checkVisitor.calls) 
     
     def test_if_compare_left(self):
@@ -39,7 +55,7 @@ def with_if_compare_left():
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'sys.platform', {'linux'})
-        call = Call('name', 'hash', 6, 'os', 'getgid', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'getgid', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls) 
     
@@ -57,7 +73,7 @@ def with_if_compare_not():
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'sys.platform', {'win32'})
-        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls) 
         
@@ -75,7 +91,7 @@ def with_if_compare_and(key):
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'sys.platform', {'win32'})
-        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls) 
     
@@ -93,7 +109,7 @@ def with_if_compare_or(key):
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'sys.platform', {'win32'})
-        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls) 
     
@@ -115,8 +131,8 @@ def with_if_two_compare():
         self.assertEqual(len(checkVisitor.calls), 2)
         first_usage = Usage(5, 'sys.platform', {'win32'})
         second_usage = Usage(7, 'sys.platform', {'linux'})
-        first_call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com')
-        second_call = Call('name', 'hash', 8, 'os', 'getgid', '', False, 'filename', 'github.com')
+        first_call = Call('name', 'hash', 6, 'os', 'fork', '', False, 'filename', 'github.com', "low")
+        second_call = Call('name', 'hash', 8, 'os', 'getgid', '', False, 'filename', 'github.com', "low")
         self.assertIn(first_usage, checkVisitor.usages) 
         self.assertIn(second_usage, checkVisitor.usages) 
         self.assertIn(first_call, checkVisitor.calls) 
@@ -136,7 +152,7 @@ def with_if_compare_tuple():
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'sys.platform', {'win32', 'linux'})
-        call = Call('name', 'hash', 6, 'os', 'getgid', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'getgid', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls)     
     
@@ -154,7 +170,7 @@ def with_if_compare_list():
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'sys.platform', {'win32', 'linux'})
-        call = Call('name', 'hash', 6, 'os', 'getgid', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'getgid', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls)     
     
@@ -172,7 +188,7 @@ def with_if_call():
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'sys.platform', {'linux'})
-        call = Call('name', 'hash', 6, 'os', 'chown', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'chown', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls)     
     
@@ -190,7 +206,7 @@ def with_if_call_compare_platform():
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         usage = Usage(5, 'platform.system', {'Linux'})
-        call = Call('name', 'hash', 6, 'os', 'chown', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'chown', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls)         
     
@@ -206,7 +222,7 @@ def with_if_call_compare():
         checkVisitor = CheckVisitor(self.os_apis)
         checkVisitor.visit(file_compile)
         usage = Usage(5, 'sys.platform', {'linux'})
-        call = Call('name', 'hash', 6, 'os', 'chown', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'chown', '', False, 'filename', 'github.com', "low")
         self.assertIn(usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls)     
         # print(checkVisitor.usages)
@@ -229,7 +245,7 @@ def with_if_nested():
         self.assertEqual(len(checkVisitor.calls), 1)
         first_usage = Usage(5, 'sys.platform', {'win32'})
         second_usage = Usage(6, 'sys.platform', {'darwin'})
-        call = Call('name', 'hash', 7, 'os', 'getgid', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 7, 'os', 'getgid', '', False, 'filename', 'github.com', "low")
         self.assertIn(first_usage, checkVisitor.usages) 
         self.assertIn(second_usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls)     
@@ -248,7 +264,7 @@ def with_if_args():
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertEqual(len(checkVisitor.calls), 1)
         first_usage = Usage(5, 'platform.win32_ver', set())
-        call = Call('name', 'hash', 6, 'os', 'getgid', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 6, 'os', 'getgid', '', False, 'filename', 'github.com', "low")
 
         self.assertIn(first_usage, checkVisitor.usages) 
         self.assertIn(call, checkVisitor.calls)     
@@ -297,7 +313,7 @@ def test_user_agent():
         file_compile = ast.parse(code)
         checkVisitor = CheckVisitor(self.os_apis)
         checkVisitor.visit(file_compile)
-        call = Call('name', 'hash', 5, 'os', 'register_at_fork', '', False, 'filename', 'github.com')
+        call = Call('name', 'hash', 5, 'os', 'register_at_fork', '', False, 'filename', 'github.com', "low")
         
         self.assertEqual(len(checkVisitor.usages), 0)
         self.assertEqual(len(checkVisitor.calls), 1)

@@ -104,7 +104,7 @@ class Report(ABC):
 class ReportAPI(Report):
     def __init__(self, output):
         super().__init__(output)
-        self.call_headear = ['project_name','project_commit', 'line', 'module', 'call', 'is_test' ,'filename', 'url']
+        self.call_headear = ['project_name','project_commit', 'line', 'module', 'call', 'is_test' ,'filename', 'url', 'risk']
     
     def write(self, content):
         parent = os.path.dirname(self.output)

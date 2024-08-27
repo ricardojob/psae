@@ -220,7 +220,7 @@ class TestCallIf(unittest.TestCase):
         
         self.assertEqual(len(checkVisitor.usages), 1)
         self.assertIn(first_usage, checkVisitor.usages) 
-    
+             
     # def test_faceswap_sysinfo_test(self):
     #     pretty_url = 'https://github.com/deepfakes/faceswap/blob/216ef387636eb7b84819c1b77d9a2f631ed97ab5/tests/lib/sysinfo_test.py#L54'
     #     raw_url = self.pretty_to_raw(pretty_url)

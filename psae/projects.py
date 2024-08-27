@@ -36,8 +36,8 @@ class ProjectLocal (Project):
         super().__init__(project_name, project_hash, project_url_remote=directory, directory=directory, platform_apis_filename=load_apis)
         
 class ProjectRemote(Project):
-    def __init__(self, load_apis, project_name: str="project_name", project_hash: str = "project_hash"):
-        super().__init__(project_name, project_hash, project_url_remote="https://github.com/", directory="temp", platform_apis_filename=load_apis)
+    def __init__(self, load_apis, directory: str="data", project_name: str="project_name", project_hash: str = "project_hash"):
+        super().__init__(project_name, project_hash, project_url_remote="https://github.com/", directory=directory, platform_apis_filename=load_apis)
         
     def clone(self, repository):
         if "https://github.com/" in repository:
@@ -45,7 +45,7 @@ class ProjectRemote(Project):
         else:
             self.project_url_remote = f'https://github.com/{repository}'   
         # dir = tempfile.TemporaryDirectory(dir=".")
-        dir = f'data/{self.project_url_remote.replace("https://github.com/", "")}'
+        dir = f'{self.directory}/{self.project_url_remote.replace("https://github.com/", "")}'
         logger.info(f'Cloning started in {dir}.')
         repo = Repo(self.project_url_remote)
         local = repo.clone_at(dir)

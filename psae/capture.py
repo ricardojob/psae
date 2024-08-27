@@ -3,6 +3,7 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 import logging
+from types import NoneType
 # from typing import Any, List, NamedTuple, Tuple
 
 logger = logging.getLogger(__name__)
@@ -20,16 +21,17 @@ class Call:
     is_test: bool
     filename: str
     url: str
+    risk: str
     
     def make(line, module, call_name, call_name_long):
-        return Call("name","hash",line, module, call_name, call_name_long, False, "filename", "github.com")
+        return Call("name","hash",line, module, call_name, call_name_long, False, "filename", "github.com", "high")
 
     def __eq__(self, other):
         if not isinstance(other, Call):
             return False
-        return self.line == other.line and self.module == other.module and self.call_name == other.call_name and self.call_name_long == other.call_name_long
+        return self.line == other.line and self.module == other.module and self.call_name == other.call_name and self.call_name_long == other.call_name_long and self.risk == other.risk
     def __hash__(self):
-        return hash((self.line, self.module, self.call_name, self.call_name_long))
+        return hash((self.line, self.module, self.call_name, self.call_name_long, self.risk))
 
 @dataclass
 # @dataclass(unsafe_hash=True)
@@ -124,7 +126,7 @@ class CheckVisitor(ast.NodeVisitor):
     def get_parent(self, node):
         call_name = ""
         parent = node
-        while(not isinstance(parent, ast.Name)):
+        while(not isinstance(parent, ast.Name) and not isinstance(parent, NoneType)):
             if "" == parent or isinstance(parent, str) or type(parent) == str:
                 break
             if isinstance(parent, (bytes, bytearray, int, float, complex)):
@@ -256,16 +258,20 @@ class CheckVisitor(ast.NodeVisitor):
         # print(f"container: {self.container} \nusage: {self.usage} ")
         # self.usages.add(self.usage)
         # self.calls.add(Call(node.lineno, module_name, call_name, call_name_long))
-        self.calls.add(
-            Call.make(node.lineno, module_name, call_name, call_name_long)
-        )
-        nested = self.container.get('context','')
-        if nested and nested!= "" and "yes" in nested:
+        call_make = Call.make(node.lineno, module_name, call_name, call_name_long)
+        
+        context = self.container.get('context','')
+        conditional = self.container.get('conditional','')
+        decorator = self.container.get('decorator','')
+        except_container = self.container.get('except','')
+        
+        if context and context!= "" and "yes" in context and (conditional!= "" or decorator!= "" or except_container!= ""):
             self.debug(f"add_calls:container:context: {self.container}, p: self.p ")
-            self.calls_context.add(
-                Call.make(node.lineno, module_name, call_name, call_name_long)
-            )
-    
+            call_make.risk = "low"
+            self.calls_context.add(call_make)
+        
+        self.calls.add(call_make)
+        
     def debug(self, msg):
         if self.DEBUG:
             # logger.info(msg=msg)         
@@ -278,9 +284,11 @@ class CheckVisitor(ast.NodeVisitor):
         self.container['function'] = f"{ant}/{node.name}"
         # nested_function = self.container.get('nested_function','')
         # self.container['nested_function'] = f"{nested_function}/{node.name}"
+        decora = self.container.get('decorator','')
         self.parse_decorator(node)
         self.generic_visit(node)
         self.container['function'] = f"{ant}"  
+        self.container['decorator'] = f"{decora}"  
         self.debug(f"visit_FunctionDef:end: {node.name}: {self.container}")           
         self.clear_container() 
 
@@ -305,9 +313,11 @@ class CheckVisitor(ast.NodeVisitor):
         self.debug(f"visit_AsyncFunctionDef:begin: {node.name}: {self.container}")        
         ant = self.container.get('function','')
         self.container['function'] = f"{ant}/{node.name}"
+        decora = self.container.get('decorator','')
         self.parse_decorator(node)
         self.generic_visit(node)    
         self.container['function'] = f"{ant}"   
+        self.container['decorator'] = f"{decora}"   
         self.debug(f"visit_AsyncFunctionDef:end: {node.name}: {self.container}")
         self.clear_container() 
 
@@ -329,9 +339,11 @@ class CheckVisitor(ast.NodeVisitor):
         self.funcao = ""
         ant = self.container.get('class','')
         self.container['class'] = f"{ant}/{node.name}"
+        decora = self.container.get('decorator','')
         self.parse_decorator(node)
         self.generic_visit(node)
         self.container['class'] = f"{ant}"
+        self.container['decorator'] = f"{decora}"
            
     def visit_Compare(self, node):
         self.debug(f'visit_Compare begin: {node}')
@@ -700,6 +712,9 @@ class CheckVisitor(ast.NodeVisitor):
                     if (isinstance(l, ast.Attribute)):
                         self.debug(f'excepts: tuple: attribute {l.value}')    
                         excepthandler.add(l.value)
+                    elif (isinstance(l, ast.Starred)):
+                        self.debug(f'excepts: tuple: attribute {l.value}')    
+                        excepthandler.add(l.value)
                     else:    
                         self.debug(f'excepts: tuple: {l.id}')
                         excepthandler.add(l.id)
@@ -758,9 +773,9 @@ class CheckVisitor(ast.NodeVisitor):
                 self.capture_bool(arg)  
                 
         self.debug(f"parse_decorator:end: {self.container}")
-        ant = self.container.get('class','')
+        # ant = self.container.get('class','')
         
-        self.container['decorator'] = ""    
+        # self.container['decorator'] = ""    
         # for d in node.decorator_list:
         #     if not isinstance(d, ast.Call):
         #         continue
