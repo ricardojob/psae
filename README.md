@@ -1,6 +1,6 @@
 [![Tests](https://github.com/ricardojob/PSASpotter/actions/workflows/tests.yaml/badge.svg)](https://github.com/ricardojob/PSASpotter/actions/workflows/tests.yaml)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/psaspotter)](https://pypi.org/project/psaspotter/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7025599.svg)](https://doi.org/10.5281/zenodo.14029218)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14018574.svg)](https://doi.org/10.5281/zenodo.14018574)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE.txt)
 
 <!-- ![Maven](https://github.com/VariantSync/SyncStudy/actions/workflows/maven.yml/badge.svg) -->
