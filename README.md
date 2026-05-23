@@ -99,7 +99,7 @@ The CSV file given to `-o` (or that will be written to the standard output by de
 
 ## Tool demonstration
 
-The following video presents a demonstration scenario of the tool: [video](https://youtu.be/9V7fNl32w0A).
+The following video presents a demonstration scenario of the tool: [video](https://youtu.be/).
 
 ## License
 
